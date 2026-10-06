@@ -183,6 +183,8 @@ class StorageTests(unittest.TestCase):
             html = (output / "index.html").read_text(encoding="utf-8")
             app = re.search(r'src="\./(app\.[0-9a-f]{16}\.mjs)"', html).group(1)
             script = (output / app).read_text(encoding="utf-8")
+            for original in ("app.mjs", "status.mjs", "styles.css", "favicon.svg"):
+                self.assertTrue((output / original).exists())
             dependency = re.search(r"from '\./(status\.[0-9a-f]{16}\.mjs)'", script).group(1)
             self.assertTrue((output / dependency).exists())
             self.assertIn("client_restricted", (output / dependency).read_text(encoding="utf-8"))

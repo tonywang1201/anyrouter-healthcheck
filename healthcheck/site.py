@@ -23,6 +23,8 @@ def build_site(config: dict, data_dir: Path, output: Path, now=None, demo=False)
     names = {name: f"{Path(name).stem}.{version}{Path(name).suffix}" if Path(name).suffix in (".mjs", ".css", ".svg") else name
              for name in assets}
     for name, content in assets.items():
+        # Keep original URLs working while a CDN or browser still has the old HTML.
+        (output / name).write_bytes(content)
         if Path(name).suffix in (".html", ".mjs", ".css"):
             for original, generated in names.items():
                 content = content.replace(("./" + original).encode(), ("./" + generated).encode())
