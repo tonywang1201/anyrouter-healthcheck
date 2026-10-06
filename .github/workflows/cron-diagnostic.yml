@@ -1,0 +1,21 @@
+name: Cron delivery diagnostic
+run-name: "Cron delivery diagnostic (${{ github.event_name }})"
+on:
+  schedule:
+    - cron: '4,9,14,19,24,29,34,39,44,49,54,59 * * * *'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Record event delivery without model API calls
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          REF: ${{ github.ref }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          date -u '+delivered_at=%Y-%m-%dT%H:%M:%SZ'
+          echo "event=$EVENT cron=$SCHEDULE ref=$REF actor=$ACTOR"
