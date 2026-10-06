@@ -1,0 +1,32 @@
+{
+  "title": "AnyRouter 模型状态",
+  "base_url": "https://anyrouter.top",
+  "api_key_env": "ANYROUTER_API_KEY",
+  "interval_minutes": 15,
+  "stale_after_minutes": 30,
+  "retention_days": 90,
+  "timeout_seconds": 60,
+  "concurrency": 2,
+  "prompt": "Reply with OK only.",
+  "timezone": "Asia/Hong_Kong",
+  "probe_location": "GitHub Actions / Ubuntu（区域由运行器决定）",
+  "models": [
+    {"id": "gpt-5-codex", "provider": "OpenAI", "protocol": "responses", "parameters": {"max_output_tokens": 1024}},
+    {"id": "gpt-6-astra", "provider": "OpenAI", "protocol": "responses", "parameters": {"max_output_tokens": 1024}},
+    {"id": "gpt-6-astra-cc-format", "provider": "OpenAI", "protocol": "messages", "parameters": {"max_tokens": 256}},
+    {"id": "claude-3-5-haiku-20241022", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "claude-3-5-sonnet-20241022", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "claude-3-7-sonnet-20250219", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "claude-fable-5-1-reversed", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 64}},
+    {"id": "claude-haiku-4-5-20251001", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "claude-opus-4-1-20250805", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "claude-opus-4-20250514", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "claude-opus-4-5-20251101", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "claude-opus-4-6", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "claude-opus-4-7", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 64}},
+    {"id": "claude-opus-5-5", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 64}},
+    {"id": "claude-sonnet-4-20250514", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "claude-sonnet-4-5-20250929", "provider": "Anthropic", "protocol": "messages", "parameters": {"max_tokens": 32}},
+    {"id": "gemini-2.5-pro", "provider": "Google", "protocol": "chat_completions", "parameters": {"max_completion_tokens": 1024}}
+  ]
+}

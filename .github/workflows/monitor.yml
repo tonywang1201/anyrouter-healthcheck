@@ -1,0 +1,106 @@
+name: Monitor and publish
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'Optional: probe one model ID instead of all models'
+        required: false
+        type: string
+  push:
+    branches: [main]
+    paths-ignore: ['data/**', 'README.md', 'LICENSE']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monitor-and-pages
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Validate configuration and run tests
+        run: |
+          python -m healthcheck validate
+          python -m unittest discover -s tests -v
+          node --test tests/status.test.mjs
+      - name: Load existing history
+        shell: bash
+        run: |
+          if git show-ref --verify --quiet refs/remotes/origin/monitor-data; then
+            git restore --source origin/monitor-data -- data
+          fi
+      - name: Probe models
+        if: github.event_name != 'push'
+        env:
+          ANYROUTER_API_KEY: ${{ secrets.ANYROUTER_API_KEY }}
+          SELECTED_MODEL: ${{ inputs.model }}
+        shell: bash
+        run: |
+          if [[ -z "$ANYROUTER_API_KEY" ]]; then
+            echo '::warning::ANYROUTER_API_KEY is missing. No API calls were made; the status page will show unknown until fresh data exists.'
+          elif [[ -n "$SELECTED_MODEL" ]]; then
+            python -m healthcheck check --model "$SELECTED_MODEL"
+          else
+            python -m healthcheck check
+          fi
+      - name: Build static site
+        run: python -m healthcheck build
+      - name: Persist history on monitor-data branch
+        if: github.event_name != 'push'
+        shell: bash
+        run: |
+          mkdir -p data
+          touch data/.gitkeep
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git show-ref --verify --quiet refs/remotes/origin/monitor-data; then
+            parent=$(git rev-parse origin/monitor-data)
+          else
+            parent=$(git rev-parse HEAD)
+          fi
+          export GIT_INDEX_FILE="$RUNNER_TEMP/monitor-data-index"
+          git read-tree "$parent"
+          git add -A -- data
+          tree=$(git write-tree)
+          if [[ "$tree" != "$(git rev-parse "$parent^{tree}")" ]]; then
+            commit=$(git commit-tree "$tree" -p "$parent" -m 'Record model availability samples')
+            git push origin "$commit:refs/heads/monitor-data"
+          fi
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+          retention-days: 1
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: monitor
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy status page
+        id: deployment
+        uses: actions/deploy-pages@v4

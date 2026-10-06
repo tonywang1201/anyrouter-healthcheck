@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="AnyRouter 各模型 API 的实际调用状态、采样成功率与延迟历史。">
+  <meta name="color-scheme" content="light">
+  <title>AnyRouter 模型状态</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="AnyRouter 模型状态首页"><span class="brand-mark">a<span></span></span><strong>AnyRouter<span class="brand-divider">/</span><span class="brand-subtitle">模型状态</span></strong></a>
+    <div class="top-meta"><span class="live-dot"></span><span id="schedule-label">每 15 分钟检测</span><button id="refresh" class="icon-button" aria-label="刷新状态" title="刷新状态"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 6M20 4v7h-7"/></svg></button></div>
+  </header>
+  <main>
+    <div id="demo-banner" class="notice demo-notice" hidden>演示数据 · 本页使用模拟记录，未调用任何模型 API。</div>
+    <div id="load-error" class="notice error-notice" role="alert" hidden></div>
+    <section class="hero">
+      <div><div class="eyebrow"><span></span> MODEL AVAILABILITY</div><h1>每个模型，<br class="mobile-break">都有迹可循。</h1><p class="hero-copy">用真实 API 调用，记录此刻的可用性与过去的表现。</p></div>
+      <div class="last-check"><span>最近一轮检测</span><strong id="last-run">等待首次检测</strong><small id="probe-location">GitHub Actions / Ubuntu</small></div>
+    </section>
+    <section class="summary-grid" aria-label="当前状态统计">
+      <div class="summary-card"><div class="summary-top"><span>当前可用</span><span class="state-dot success"></span></div><div class="summary-value"><strong id="count-success">—</strong><span id="model-total">/ — 个模型</span></div><small>收到有效且非空的模型回复</small></div>
+      <div class="summary-card"><div class="summary-top"><span>检测失败</span><span class="state-dot failure"></span></div><div class="summary-value"><strong id="count-failure">—</strong><span>个模型</span></div><small>超时、服务错误或回复异常</small></div>
+      <div class="summary-card"><div class="summary-top"><span>账号受限</span><span class="state-dot account_restricted"></span></div><div class="summary-value"><strong id="count-account_restricted">—</strong><span>个模型</span></div><small>额度、权限或请求频率限制</small></div>
+      <div class="summary-card"><div class="summary-top"><span>状态未知</span><span class="state-dot unknown"></span></div><div class="summary-value"><strong id="count-unknown">—</strong><span>个模型</span></div><small id="stale-label">超过 30 分钟未收到新记录</small></div>
+    </section>
+    <section class="panel model-panel" aria-labelledby="models-heading">
+      <div class="panel-heading"><div><h2 id="models-heading">模型概览 <span id="visible-count" class="count-pill">17</span></h2><p>最近一次状态与 24 小时检测记录</p></div><div class="legend"><span><i class="success"></i>可用</span><span><i class="failure"></i>失败</span><span><i class="account_restricted"></i>受限</span><span><i class="unknown"></i>未采样</span></div></div>
+      <div class="toolbar"><div id="provider-filters" class="segmented" aria-label="筛选提供商"><button data-provider="all" class="active" aria-pressed="true">全部模型</button><button data-provider="Anthropic" aria-pressed="false">Anthropic</button><button data-provider="OpenAI" aria-pressed="false">OpenAI</button><button data-provider="Google" aria-pressed="false">Google</button></div><div class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="search" type="search" placeholder="搜索模型…" aria-label="搜索模型"></div></div>
+      <div class="table-scroll"><table><thead><tr><th class="model-col">模型 / 最近检测</th><th>当前状态</th><th class="timeline-col">过去 24 小时<span class="th-note">每格 15 分钟</span></th><th>24h 成功率</th><th class="latency-col">最近耗时</th><th class="detail-col"><span class="sr-only">详情</span></th></tr></thead><tbody id="models-body"><tr><td colspan="6" class="empty-state">正在读取状态…</td></tr></tbody></table></div>
+      <div class="panel-footer"><span>缺失记录显示为灰色；不计为成功。</span><span>点击模型查看历史曲线 <span aria-hidden="true">↗</span></span></div>
+    </section>
+    <section id="detail-panel" class="panel detail-panel" aria-labelledby="detail-title" hidden>
+      <div class="panel-heading"><div><div class="eyebrow">MODEL INSIGHTS</div><h2 id="detail-title">模型详情</h2><p id="detail-subtitle"></p></div><div class="segmented" id="window-filters" aria-label="历史时间范围"><button data-hours="24" class="active" aria-pressed="true">24 小时</button><button data-hours="168" aria-pressed="false">7 天</button><button data-hours="720" aria-pressed="false">30 天</button></div></div>
+      <div class="detail-stats"><div><span>采样成功率</span><strong id="detail-rate">—</strong></div><div><span>采样覆盖率</span><strong id="detail-coverage">—</strong></div><div><span>成功请求 P50</span><strong id="detail-p50">—</strong></div><div><span>成功请求 P95</span><strong id="detail-p95">—</strong></div></div>
+      <div class="chart-heading"><strong>请求总耗时</strong><span>包括等待和生成时间 · 鼠标悬停查看记录</span></div><div id="chart" class="chart" role="region" aria-label="模型请求耗时图表"></div>
+      <div class="detail-history"><h3>最近检测</h3><div class="table-scroll"><table><thead><tr><th>检测时间（香港）</th><th>结果</th><th>耗时</th><th>HTTP</th><th>原因</th><th>Tokens（输入 / 输出）</th></tr></thead><tbody id="recent-body"></tbody></table></div></div>
+    </section>
+    <section class="method-note"><div class="note-icon">i</div><div><h3>如何理解这些记录</h3><p>可用表示收到有效回复，不验证模型身份。采样成功率 = 成功次数 ÷ 已完成调用次数（含账号受限）；覆盖率反映应采样时段中实际取得记录的比例。结果代表此密钥与探测节点的调用体验，时间均为香港时间。</p></div><a id="daily-download" href="./data/daily.json" download>每日汇总 JSON <span aria-hidden="true">↗</span></a></section>
+    <footer><span><span class="footer-dot"></span> AnyRouter 模型状态</span><span>15 分钟采样 · 90 天明细 · 更早记录保留每日汇总</span></footer>
+  </main>
+  <noscript><p class="notice">请启用 JavaScript 查看模型状态。原始数据可从 data/status.json 读取。</p></noscript>
+</body>
+</html>
