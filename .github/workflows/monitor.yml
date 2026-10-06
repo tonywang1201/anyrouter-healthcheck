@@ -1,8 +1,9 @@
 name: Monitor and publish
+run-name: "${{ github.event_name == 'schedule' && 'Scheduled model probe' || github.event_name == 'workflow_dispatch' && 'Manual model probe' || 'Publish code changes' }}"
 
 on:
   schedule:
-    - cron: '7,22,37,52 * * * *'
+    - cron: '13,28,43,58 * * * *'
   workflow_dispatch:
     inputs:
       model:
@@ -56,7 +57,8 @@ jobs:
         shell: bash
         run: |
           if [[ -z "$ANYROUTER_API_KEY" ]]; then
-            echo '::warning::ANYROUTER_API_KEY is missing. No API calls were made; the status page will show unknown until fresh data exists.'
+            echo '::error::ANYROUTER_API_KEY is missing. Configure the repository secret before running a model probe.'
+            exit 1
           elif [[ -n "$SELECTED_MODEL" ]]; then
             python -m healthcheck check --model "$SELECTED_MODEL"
           else
