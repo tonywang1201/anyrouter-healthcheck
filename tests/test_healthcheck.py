@@ -76,6 +76,10 @@ class ProbeTests(unittest.TestCase):
             (200, {"error": {"message": "余额不足 " + KEY}}, ("account_restricted", "quota_exceeded")),
             (500, {"error": KEY}, ("failure", "upstream_error")),
             (400, {"error": "unsupported parameter"}, ("failure", "invalid_request")),
+            (400, {"error": "Only Claude Code clients are allowed " + KEY}, ("account_restricted", "client_restricted")),
+            (403, {"error": "请使用 Claude Code"}, ("account_restricted", "client_restricted")),
+            (400, {"error": "无可用渠道"}, ("failure", "model_unavailable")),
+            (400, {"error": "model_not_found"}, ("failure", "model_unavailable")),
             (404, {"error": "model not found"}, ("failure", "endpoint_or_model_not_found")),
         ]:
             result = interpret_response("messages", code, json.dumps(error).encode())

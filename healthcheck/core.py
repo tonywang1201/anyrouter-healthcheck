@@ -26,7 +26,7 @@ REASONS = {
     "endpoint_or_model_not_found", "invalid_request", "upstream_error", "access_denied",
     "http_error", "timeout", "network_error", "invalid_json", "invalid_response",
     "empty_response", "incomplete_response", "response_too_large", "monitor_error",
-    "monitor_not_configured",
+    "monitor_not_configured", "client_restricted", "model_unavailable",
 }
 TOKEN_KEYS = {
     "input_tokens", "output_tokens", "total_tokens", "cached_tokens", "reasoning_tokens",
@@ -175,6 +175,12 @@ def error_category(http_status: int, payload) -> tuple[str, str]:
         return "account_restricted", "quota_exceeded"
     if any(term in text for term in ("invalid_api_key", "invalid api key", "令牌无效")):
         return "account_restricted", "invalid_api_key"
+    if any(term in text for term in ("claude code", "claude-code", "codex")) and any(term in text for term in (
+            "only", "must use", "restricted", "not allowed", "仅支持", "只支持", "仅限", "只能", "不支持", "请使用")):
+        return "account_restricted", "client_restricted"
+    if http_status != 404 and any(term in text for term in ("no available channel", "no channel available", "no available provider",
+            "无可用渠道", "没有可用渠道", "model_not_found", "model not found", "model is not available")):
+        return "failure", "model_unavailable"
     if http_status == 403:
         return ("account_restricted", "permission_denied") if isinstance(payload, dict) else ("failure", "access_denied")
     if http_status == 404:

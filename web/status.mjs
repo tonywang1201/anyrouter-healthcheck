@@ -1,5 +1,5 @@
 export const LABELS = {success:'可用', failure:'失败', account_restricted:'账号受限', unknown:'未知'};
-export const REASONS = {ok:'有效回复',invalid_api_key:'密钥无效',permission_denied:'权限不足',quota_exceeded:'额度不足',rate_limited:'请求限流',endpoint_or_model_not_found:'接口或模型不存在',invalid_request:'请求参数不兼容',upstream_error:'服务端错误',access_denied:'访问被拒绝 / WAF',http_error:'HTTP 错误',timeout:'请求超时',network_error:'网络错误',invalid_json:'非 JSON 回复',invalid_response:'回复结构异常',empty_response:'空回复',incomplete_response:'生成未完成 / token 上限',response_too_large:'回复超过大小限制',monitor_error:'检测器错误',monitor_not_configured:'未配置检测密钥'};
+export const REASONS = {ok:'有效回复',invalid_api_key:'密钥无效',permission_denied:'权限不足',quota_exceeded:'额度不足',rate_limited:'请求限流',endpoint_or_model_not_found:'接口或模型不存在',invalid_request:'请求被拒绝（HTTP 400/422）',client_restricted:'客户端受限',model_unavailable:'模型或渠道不可用',upstream_error:'服务端错误',access_denied:'访问被拒绝 / WAF',http_error:'HTTP 错误',timeout:'请求超时',network_error:'网络错误',invalid_json:'非 JSON 回复',invalid_response:'回复结构异常',empty_response:'空回复',incomplete_response:'生成未完成 / token 上限',response_too_large:'回复超过大小限制',monitor_error:'检测器错误',monitor_not_configured:'未配置检测密钥'};
 export function currentStatus(latest, now, staleMinutes) {
   if (!latest || !Number.isFinite(Date.parse(latest.checked_at))) return 'unknown';
   const age = now - Date.parse(latest.checked_at);

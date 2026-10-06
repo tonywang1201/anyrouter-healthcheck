@@ -2,13 +2,13 @@
 
 每 15 分钟实际调用截图中的 17 个模型，记录 API 可用性、请求总耗时与 token 用量，使用 GitHub Actions + GitHub Pages 免费托管。
 
-**这不是 AnyRouter 官方状态页。** 结果只代表你的密钥从探测节点调用时的体验，不验证模型身份。模型 ID 原样来自截图；默认协议根据调用场景设置，尚未经过 AnyRouter 鉴权实测，请先逐模型确认。
+**这不是 AnyRouter 官方状态页。** 结果只代表你的密钥从探测节点调用时的体验，不验证模型身份。模型 ID 原样来自截图。已从 GitHub 运行器完成全部 17 个模型的首轮鉴权调用，Haiku 4.5 返回有效回复；其他模型的失败和限制同样保留在历史中，实时结果以状态页为准。
 
 ## 部署
 
 仓库：<https://github.com/tonywang1201/anyrouter-healthcheck>
 
-预期状态页：<https://tonywang1201.github.io/anyrouter-healthcheck/>（Pages 成功部署后生效）。
+状态页：<https://tonywang1201.github.io/anyrouter-healthcheck/>。
 
 1. 在仓库 **Settings → Secrets and variables → Actions → New repository secret** 中添加 `ANYROUTER_API_KEY`。建议使用单独的探测密钥，并在 AnyRouter 后台设置可接受的额度限制。不要把密钥放在配置文件、代码、网页或聊天中。
 2. 在 **Settings → Pages → Source** 选择 **GitHub Actions**。
@@ -32,6 +32,8 @@ GitHub 定时任务可能延迟或漏跑；公开仓库连续 60 天没有活动
 | `chat_completions` | `/v1/chat/completions` | assistant 角色、非空 message 内容 | `max_completion_tokens` 或 `max_tokens` |
 
 各模型可以覆盖 `base_url`（HTTPS origin）、`path`、`auth`（`bearer` 或 `x-api-key`）、`api_key_env`、`parameters`。Messages 默认使用 Bearer 令牌，同时携带 `anthropic-version: 2023-06-01`；如果后台示例要求 `x-api-key`，请修改对应模型的 `auth`。
+
+[AnyRouter 使用指南](https://docs.anyrouter.top/)主要面向 Claude Code；普通 API 请求不一定对所有列出的模型开放。服务明确要求特定客户端时，记录“客户端受限”，不冒充该客户端。HTTP 400/422 只表示请求被拒绝，可能涉及模型、客户端或参数，不能仅凭状态码确定是参数错误。
 
 示例：
 
