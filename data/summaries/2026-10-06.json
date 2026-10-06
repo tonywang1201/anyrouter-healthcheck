@@ -1,0 +1,1 @@
+{"schema_version":1,"date":"2026-10-06","models":{"claude-haiku-4-5-20251001":{"success":1,"failure":0,"account_restricted":0,"unknown":0,"latency_sum_ms":32790,"latency_count":1,"usage":{"input_tokens":12,"output_tokens":4,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"total_tokens":16}}}}
