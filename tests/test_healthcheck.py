@@ -2,6 +2,7 @@ import datetime as dt
 import http.server
 import json
 import os
+import re
 from pathlib import Path
 import tempfile
 import threading
@@ -173,6 +174,23 @@ class StorageTests(unittest.TestCase):
             self.assertTrue(all(model["current_status"] == "unknown" for model in manifest["models"]))
             self.assertTrue(all(model["stats"]["24"]["success_rate"] is None for model in manifest["models"]))
             self.assertEqual(manifest["history"], [])
+
+    def test_versioned_assets_resolve_module_imports_and_stay_stable_for_data_updates(self):
+        config = load_config(ROOT / "config" / "models.json")
+        with tempfile.TemporaryDirectory() as directory:
+            data, output = Path(directory) / "data", Path(directory) / "public"
+            build_site(config, data, output, NOW)
+            html = (output / "index.html").read_text(encoding="utf-8")
+            app = re.search(r'src="\./(app\.[0-9a-f]{16}\.mjs)"', html).group(1)
+            script = (output / app).read_text(encoding="utf-8")
+            dependency = re.search(r"from '\./(status\.[0-9a-f]{16}\.mjs)'", script).group(1)
+            self.assertTrue((output / dependency).exists())
+            self.assertIn("client_restricted", (output / dependency).read_text(encoding="utf-8"))
+            for asset in re.findall(r'(?:href|src)="\./([^"/]+\.(?:svg|css|mjs))"', html):
+                self.assertTrue((output / asset).exists())
+            save_results(data, [record(model=config["models"][0]["id"])], 90, NOW)
+            build_site(config, data, output, NOW + dt.timedelta(minutes=15))
+            self.assertEqual((output / "index.html").read_text(encoding="utf-8"), html)
 
     def test_demo_is_marked_and_does_not_make_network_calls(self):
         config = load_config(ROOT / "config" / "models.json")

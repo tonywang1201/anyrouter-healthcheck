@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 from pathlib import Path
 import random
-import shutil
 import tempfile
 
 from .core import (UTC, TOKEN_KEYS, clean_record, parse_time, read_json, save_results,
@@ -18,9 +18,15 @@ def build_site(config: dict, data_dir: Path, output: Path, now=None, demo=False)
     if output == ROOT or output == data_dir.resolve() or ROOT.is_relative_to(output) or data_dir.resolve().is_relative_to(output):
         raise ValueError("Output must be a separate generated-site directory")
     output.mkdir(parents=True, exist_ok=True)
-    for source in (ROOT / "web").iterdir():
-        if source.is_file():
-            shutil.copyfile(source, output / source.name)
+    assets = {source.name: source.read_bytes() for source in (ROOT / "web").iterdir() if source.is_file()}
+    version = hashlib.sha256(b"".join(name.encode() + assets[name] for name in sorted(assets))).hexdigest()[:16]
+    names = {name: f"{Path(name).stem}.{version}{Path(name).suffix}" if Path(name).suffix in (".mjs", ".css", ".svg") else name
+             for name in assets}
+    for name, content in assets.items():
+        if Path(name).suffix in (".html", ".mjs", ".css"):
+            for original, generated in names.items():
+                content = content.replace(("./" + original).encode(), ("./" + generated).encode())
+        (output / names[name]).write_bytes(content)
     (output / ".nojekyll").touch()
     meta = read_json(data_dir / "meta.json", {})
     latest = read_json(data_dir / "latest.json", {})
