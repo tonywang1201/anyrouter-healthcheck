@@ -33,6 +33,15 @@ GET https://api.github.com/repos/tonywang1201/anyrouter-healthcheck/actions/work
 - **2026-10-06 19:01:36 UTC / 香港时间 2026-10-07 03:01:36 再次检查：整个仓库 `schedule` 运行总数仍为 0。** 最小诊断与真实探测两个已启用工作流均没有收到定时事件。最新手动检测已接近 3 小时，不能将这种持续中断描述为已经修复。
 - 同时直接读取线上 `data/status.json`，其 `last_run_at` 仍为 `2026-10-06T16:05:06.744Z`，`generated_at` 为 `2026-10-06T16:11:22.94Z`。这说明已发布数据没有新的采样，不只是浏览器未刷新。
 
+## 2026-10-07 再次尝试修复（香港时间）
+
+- 03:09 查询仍为 0 个定时运行（对应 UTC 19:09）；认证 API 确认登录账号为仓库拥有者，拥有管理权限。
+- 约 03:12 通过 REST API 短暂关闭再恢复整个仓库的 Actions 开关，随后单独禁用再启用 `probe.yml` 和 `cron-diagnostic.yml`。确认最终仍为 `enabled: true`、`allowed_actions: all`、`sha_pinning_required: false`，两个工作流状态均为 `active`。仓库默认令牌权限未扩大。
+- 重置后的[诊断手动验证](https://github.com/tonywang1201/anyrouter-healthcheck/actions/runs/37517265728)与[全模型手动验证](https://github.com/tonywang1201/anyrouter-healthcheck/actions/runs/37517271140)均成功。模型最近检测更新到 `2026-10-07 03:13:23`，1 个成功、14 个失败、2 个账号受限；此为手动补采。
+- 约 03:14 由仓库拥有者通过 GitHub 内容接口提交 `601d4c5`，将分钟列表拆成四条独立 hourly cron，仍为每小时第 8、23、38、53 分钟，尝试重新注册定时任务。
+- 03:15:21 检查仓库范围的 `schedule` 记录仍为 0；继续观察后续预期时段，不能据此宣布已经恢复。
+- 已准备[对外反馈的完整英文草稿](github-support-draft.md)，尚未发送，发布需拥有者明确授权。
+
 ## 当前结论与下一步
 
 故障位置已缩小到定时事件未创建运行这一阶段。检测脚本、密钥与 Pages 发布在手动运行中有效；仓库设置、默认分支、工作流启用状态、合法 cron、最小诊断、重新注册与默认分支重置均已核对，仍没有定时事件。没有证据证明某个模型调用或页面缓存造成此现象，也不能从公开证据确定 GitHub 内部的具体原因。
