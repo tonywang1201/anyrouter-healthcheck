@@ -13,11 +13,12 @@
 <body>
   <header class="topbar">
     <a class="brand" href="./" aria-label="AnyRouter 模型状态首页"><span class="brand-mark">a<span></span></span><strong>AnyRouter<span class="brand-divider">/</span><span class="brand-subtitle">模型状态</span></strong></a>
-    <div class="top-meta"><span class="live-dot"></span><span id="schedule-label">每 15 分钟检测</span><button id="refresh" class="icon-button" aria-label="刷新状态" title="刷新状态"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 6M20 4v7h-7"/></svg></button></div>
+    <div class="top-meta"><span id="monitor-live" class="live-dot"></span><span id="schedule-label">每 15 分钟检测</span><button id="refresh" class="icon-button" aria-label="刷新状态" title="刷新状态"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 6M20 4v7h-7"/></svg></button></div>
   </header>
   <main>
     <div id="demo-banner" class="notice demo-notice" hidden>演示数据 · 本页使用模拟记录，未调用任何模型 API。</div>
     <div id="load-error" class="notice error-notice" role="alert" hidden></div>
+    <div id="monitor-stale" class="notice error-notice" role="status" hidden><span id="monitor-stale-message"></span> <a href="https://github.com/tonywang1201/anyrouter-healthcheck/actions/workflows/monitor.yml" target="_blank" rel="noopener">查看检测任务 ↗</a></div>
     <section class="hero">
       <div><div class="eyebrow"><span></span> MODEL AVAILABILITY</div><h1>每个模型，<br class="mobile-break">都有迹可循。</h1><p class="hero-copy">用真实 API 调用，记录此刻的可用性与过去的表现。</p></div>
       <div class="last-check"><span>最近一轮检测</span><strong id="last-run">等待首次检测</strong><small id="probe-location">GitHub Actions / Ubuntu</small></div>

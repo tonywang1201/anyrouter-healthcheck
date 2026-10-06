@@ -56,6 +56,17 @@ function renderSummary() {
   $('last-run').textContent = manifest.last_run_at ? formatTime(manifest.last_run_at,true) : '等待首次检测';
   $('schedule-label').textContent = `每 ${manifest.interval_minutes} 分钟检测`;
   $('stale-label').textContent = `超过 ${manifest.stale_after_minutes} 分钟未收到新记录`;
+  const stale = !manifest.last_run_at || !Number.isFinite(Date.parse(manifest.last_run_at)) || Date.now()-Date.parse(manifest.last_run_at)>manifest.stale_after_minutes*60000;
+  if ($('monitor-stale')) {
+    $('monitor-stale').hidden = !stale || manifest.is_demo;
+    $('monitor-stale-message').textContent = manifest.last_run_at
+      ? `监测数据已过期：最后一轮检测为 ${formatTime(manifest.last_run_at,true)}。“未知”表示未收到新记录，不代表全部模型不可用。`
+      : '尚未收到检测记录，请检查检测任务是否已运行及密钥是否已配置。';
+  }
+  if ($('monitor-live')) {
+    $('monitor-live').classList.toggle('stale',stale);
+    $('monitor-live').title = stale ? '等待新的检测记录' : '检测记录在有效期内';
+  }
   $('probe-location').textContent = manifest.probe_location;
   $('demo-banner').hidden = !manifest.is_demo;
   document.querySelector('.th-note').textContent=`每格 ${manifest.interval_minutes} 分钟`;
