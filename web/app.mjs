@@ -6,6 +6,7 @@ const cache = new Map();
 let recentChecks = [];
 let recentLoaded = false;
 let detailChecks = [];
+let loading = false;
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -29,7 +30,7 @@ function detailStats(model,checks) {
 }
 
 async function json(url) {
-  const response = await fetch(new URL(url, location.href), {cache:'no-store'});
+  const response = await fetch(new URL(url, location.href), {cache:'no-store',signal:AbortSignal.timeout(20000)});
   if (!response.ok) throw new Error('Data unavailable');
   return response.json();
 }
@@ -182,19 +183,23 @@ function selectModel(id,scroll=true) {
   if(scroll) $('detail-panel').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
 }
 async function load() {
+  if (loading) return;
+  loading=true;
   $('refresh').disabled=true;
   try {
     const fresh=await json('./data/status.json');
     if(fresh.schema_version!==1 || !Array.isArray(fresh.models)) throw new Error('Unknown schema');
     manifest=fresh;cache.clear();recentLoaded=false;renderSummary();renderModels();
+    $('page-sync').textContent=`页面数据同步：${formatTime(new Date().toISOString(),true)} · 每 5 分钟刷新`;
     $('load-error').hidden=true;
     try {recentChecks=await checksFor(24);recentLoaded=true;renderModels();} catch {recentChecks=[];renderModels();$('load-error').textContent='当前状态已加载，历史文件暂时无法读取；灰色记录不代表故障。';$('load-error').hidden=false;}
     if(!selectedModel) selectedModel=manifest.models[0]?.id;
     if(selectedModel) await renderDetail();
   } catch {
+    $('page-sync').textContent='页面数据同步失败，将在下次刷新时重试';
     $('load-error').textContent='状态数据暂时无法读取，请稍后刷新。已有结果仍会按检测时间过期。';$('load-error').hidden=false;
     if(!manifest) {const row=element('tr'),cell=element('td','empty-state','无法读取状态数据');cell.colSpan=6;row.append(cell);$('models-body').replaceChildren(row);}
-  } finally {$('refresh').disabled=false;}
+  } finally {loading=false;$('refresh').disabled=false;}
 }
 $('refresh').addEventListener('click',load);
 $('search').addEventListener('input',event=>{query=event.target.value.trim().toLowerCase();if(manifest)renderModels();});
@@ -211,4 +216,7 @@ $('window-filters').addEventListener('click',event=>{
 // Re-evaluate freshness even if a tab stays open during missed workflow runs.
 setInterval(()=>{if(manifest){renderSummary();renderModels();const model=manifest.models.find(m=>m.id===selectedModel);if(model&&detailChecks.length)detailStats(model,detailChecks);}},30000);
 setInterval(()=>{if(!document.hidden)load();},300000);
+// Background tabs can suspend timers; fetch immediately when returning to the page.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
+window.addEventListener('pageshow',event=>{if(event.persisted)load();});
 load();

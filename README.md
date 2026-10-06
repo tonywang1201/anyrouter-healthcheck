@@ -1,6 +1,8 @@
 # AnyRouter 模型状态
 
-每 15 分钟实际调用截图中的 17 个模型，记录 API 可用性、请求总耗时与 token 用量，使用 GitHub Actions + GitHub Pages 免费托管。
+计划每 15 分钟实际调用截图中的 17 个模型，记录 API 可用性、请求总耗时与 token 用量，使用 GitHub Actions + GitHub Pages 免费托管。
+
+**当前部署状态（2026-10-07 03:01 香港时间）：原生自动调度尚未恢复。** 仓库没有任何 `schedule` 运行记录；全模型手动检测与 Pages 发布已成功，但最近检测仍为 `00:05:06`。页面刷新不会生成新的模型检测记录，超过 30 分钟显示“未知”。详细证据见 [调度诊断记录](docs/scheduler-diagnostics.md)。
 
 **这不是 AnyRouter 官方状态页。** 结果只代表你的密钥从探测节点调用时的体验，不验证模型身份。模型 ID 原样来自截图。已从 GitHub 运行器完成全部 17 个模型的首轮鉴权调用，Haiku 4.5 返回有效回复；其他模型的失败和限制同样保留在历史中，实时结果以状态页为准。
 
@@ -13,7 +15,7 @@
 1. 在仓库 **Settings → Secrets and variables → Actions → New repository secret** 中添加 `ANYROUTER_API_KEY`。建议使用单独的探测密钥，并在 AnyRouter 后台设置可接受的额度限制。不要把密钥放在配置文件、代码、网页或聊天中。
 2. 在 **Settings → Pages → Source** 选择 **GitHub Actions**。
 3. 在 **Actions → Probe models and publish → Run workflow** 中先填写一个模型 ID，确认接口协议、权限和回复可用；再留空运行全部模型。
-4. 此后在每小时第 8、23、38、53 分钟自动探测，避开整点高峰。修改 `interval_minutes` 时也应修改工作流的 cron 表达式。Actions 中自动检测显示为 **Scheduled model probe**；手动检测显示为 **Manual model probe**；代码发布显示为 **Publish code changes**。原 `monitor.yml` 的执行记录仍可查看；当前工作流文件为 `probe.yml`。
+4. 定时配置为每小时第 8、23、38、53 分钟探测，避开整点高峰；实际触发需要在 Actions 中确认。修改 `interval_minutes` 时也应修改工作流的 cron 表达式。Actions 中自动检测显示为 **Scheduled model probe**；手动检测显示为 **Manual model probe**；代码发布显示为 **Publish code changes**。原 `monitor.yml` 的执行记录仍可查看；当前工作流文件为 `probe.yml`。
 
 代码发布到 `main`；探测数据自动保存到 `monitor-data`。机器人写入数据后直接部署 Pages，避免依赖机器人提交再次触发工作流。没有密钥时，代码 push 仍可部署页面；手动或定时探测则明确失败，避免出现任务成功但没有新数据的情况。不会生成假成功记录。代码 push 只发布页面，不自动消耗 API 额度。
 
@@ -24,6 +26,8 @@ GitHub 定时任务可能延迟或漏跑；公开仓库连续 60 天没有活动
 如果仓库长期没有任何 `schedule` 事件，先检查默认分支、工作流启用状态和 Actions 策略；仅有手动运行成功不能证明定时已恢复。需要绕过 GitHub 定时触发时，可使用 [Cloudflare 备用定时器](scheduler/README.md)，默认关闭且尚未部署。
 
 排障期间另有 **Cron delivery diagnostic**：每 5 分钟仅记录事件到达时间，不使用模型密钥或调用 API。恢复正常后可禁用该诊断工作流。原生定时的排障证据见 [调度诊断记录](docs/scheduler-diagnostics.md)。
+
+页面每 5 分钟重新读取已发布的数据；从后台切回标签页时立即同步。“页面数据同步”时间表示成功下载数据的时间，“最近一轮检测”只反映实际 API 探测时间。同步失败会显示提示，不会改变已有记录的检测时间。
 
 ## 调整模型和协议
 

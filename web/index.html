@@ -21,7 +21,7 @@
     <div id="monitor-stale" class="notice error-notice" role="status" hidden><span id="monitor-stale-message"></span> <a href="https://github.com/tonywang1201/anyrouter-healthcheck/actions/workflows/probe.yml" target="_blank" rel="noopener">查看检测任务 ↗</a></div>
     <section class="hero">
       <div><div class="eyebrow"><span></span> MODEL AVAILABILITY</div><h1>每个模型，<br class="mobile-break">都有迹可循。</h1><p class="hero-copy">用真实 API 调用，记录此刻的可用性与过去的表现。</p></div>
-      <div class="last-check"><span>最近一轮检测</span><strong id="last-run">等待首次检测</strong><small id="probe-location">GitHub Actions / Ubuntu</small></div>
+      <div class="last-check"><span>最近一轮检测</span><strong id="last-run">等待首次检测</strong><small id="probe-location">GitHub Actions / Ubuntu</small><span id="page-sync" role="status">正在同步页面数据…</span></div>
     </section>
     <section class="summary-grid" aria-label="当前状态统计">
       <div class="summary-card"><div class="summary-top"><span>当前可用</span><span class="state-dot success"></span></div><div class="summary-value"><strong id="count-success">—</strong><span id="model-total">/ — 个模型</span></div><small>收到有效且非空的模型回复</small></div>
@@ -42,7 +42,7 @@
       <div class="detail-history"><h3>最近检测</h3><div class="table-scroll"><table><thead><tr><th>检测时间（香港）</th><th>结果</th><th>耗时</th><th>HTTP</th><th>原因</th><th>Tokens（输入 / 输出）</th></tr></thead><tbody id="recent-body"></tbody></table></div></div>
     </section>
     <section class="method-note"><div class="note-icon">i</div><div><h3>如何理解这些记录</h3><p>可用表示收到有效回复，不验证模型身份。采样成功率 = 成功次数 ÷ 已完成调用次数（含账号受限）；覆盖率反映应采样时段中实际取得记录的比例。结果代表此密钥与探测节点的调用体验，时间均为香港时间。</p></div><a id="daily-download" href="./data/daily.json" download>每日汇总 JSON <span aria-hidden="true">↗</span></a></section>
-    <footer><span><span class="footer-dot"></span> AnyRouter 模型状态</span><span>15 分钟采样 · 90 天明细 · 更早记录保留每日汇总</span></footer>
+    <footer><span><span class="footer-dot"></span> AnyRouter 模型状态</span><span>计划每 15 分钟采样 · 90 天明细 · 更早记录保留每日汇总</span></footer>
   </main>
   <noscript><p class="notice">请启用 JavaScript 查看模型状态。原始数据可从 data/status.json 读取。</p></noscript>
 </body>
