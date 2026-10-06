@@ -1,5 +1,5 @@
 // Optional Cloudflare timer. AnyRouter credentials remain in GitHub Secrets.
-const WORKFLOW = 'https://api.github.com/repos/tonywang1201/anyrouter-healthcheck/actions/workflows/monitor.yml';
+const WORKFLOW = 'https://api.github.com/repos/tonywang1201/anyrouter-healthcheck/actions/workflows/probe.yml';
 const STATUS = 'https://tonywang1201.github.io/anyrouter-healthcheck/data/status.json';
 const ACTIVE = new Set(['queued', 'in_progress', 'waiting', 'pending', 'requested']);
 const FRESH_MS = 12 * 60 * 1000;

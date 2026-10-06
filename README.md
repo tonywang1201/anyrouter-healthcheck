@@ -12,8 +12,8 @@
 
 1. 在仓库 **Settings → Secrets and variables → Actions → New repository secret** 中添加 `ANYROUTER_API_KEY`。建议使用单独的探测密钥，并在 AnyRouter 后台设置可接受的额度限制。不要把密钥放在配置文件、代码、网页或聊天中。
 2. 在 **Settings → Pages → Source** 选择 **GitHub Actions**。
-3. 在 **Actions → Monitor and publish → Run workflow** 中先填写一个模型 ID，确认接口协议、权限和回复可用；再留空运行全部模型。
-4. 此后在每小时第 13、28、43、58 分钟自动探测，避开整点高峰。修改 `interval_minutes` 时也应修改工作流的 cron 表达式。Actions 中自动检测显示为 **Scheduled model probe**；手动检测显示为 **Manual model probe**；代码发布显示为 **Publish code changes**。
+3. 在 **Actions → Probe models and publish → Run workflow** 中先填写一个模型 ID，确认接口协议、权限和回复可用；再留空运行全部模型。
+4. 此后在每小时第 8、23、38、53 分钟自动探测，避开整点高峰。修改 `interval_minutes` 时也应修改工作流的 cron 表达式。Actions 中自动检测显示为 **Scheduled model probe**；手动检测显示为 **Manual model probe**；代码发布显示为 **Publish code changes**。原 `monitor.yml` 的执行记录仍可查看；当前工作流文件为 `probe.yml`。
 
 代码发布到 `main`；探测数据自动保存到 `monitor-data`。机器人写入数据后直接部署 Pages，避免依赖机器人提交再次触发工作流。没有密钥时，代码 push 仍可部署页面；手动或定时探测则明确失败，避免出现任务成功但没有新数据的情况。不会生成假成功记录。代码 push 只发布页面，不自动消耗 API 额度。
 

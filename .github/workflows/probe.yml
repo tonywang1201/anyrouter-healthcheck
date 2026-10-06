@@ -1,9 +1,9 @@
-name: Monitor and publish
+name: Probe models and publish
 run-name: "${{ github.event_name == 'schedule' && 'Scheduled model probe' || github.event_name == 'workflow_dispatch' && 'Manual model probe' || 'Publish code changes' }}"
 
 on:
   schedule:
-    - cron: '13,28,43,58 * * * *'
+    - cron: '8,23,38,53 * * * *'
   workflow_dispatch:
     inputs:
       model:

@@ -30,7 +30,7 @@ test('stale data dispatches exactly once to the fixed repository without sending
   assert.equal(outcome,'dispatched');
   assert.equal(calls.length,3);
   assert.equal(calls[0].options.headers.Authorization,undefined);
-  assert.match(calls[2].url,/^https:\/\/api\.github\.com\/repos\/tonywang1201\/anyrouter-healthcheck\/actions\/workflows\/monitor\.yml\/dispatches$/);
+  assert.match(calls[2].url,/^https:\/\/api\.github\.com\/repos\/tonywang1201\/anyrouter-healthcheck\/actions\/workflows\/probe\.yml\/dispatches$/);
   assert.equal(calls[2].options.body,'{"ref":"main"}');
   assert.equal(calls[2].options.redirect,'error');
 });
