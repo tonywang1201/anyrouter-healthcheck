@@ -54,7 +54,7 @@ function renderSummary() {
   for (const [status,count] of Object.entries(counts)) $(`count-${status}`).textContent = count;
   $('model-total').textContent = `/ ${manifest.models.length} 个模型`;
   $('last-run').textContent = manifest.last_run_at ? formatTime(manifest.last_run_at,true) : '等待首次检测';
-  $('schedule-label').textContent = `每 ${manifest.interval_minutes} 分钟检测`;
+  $('schedule-label').textContent = `计划每 ${manifest.interval_minutes} 分钟检测`;
   $('stale-label').textContent = `超过 ${manifest.stale_after_minutes} 分钟未收到新记录`;
   const stale = !manifest.last_run_at || !Number.isFinite(Date.parse(manifest.last_run_at)) || Date.now()-Date.parse(manifest.last_run_at)>manifest.stale_after_minutes*60000;
   if ($('monitor-stale')) {

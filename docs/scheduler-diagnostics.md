@@ -1,6 +1,6 @@
 # 定时监测排障记录（2026-10-06）
 
-观测时间：15:46 UTC / 香港时间 23:46。此记录描述现象，不断言 GitHub 内部的具体故障原因。
+首轮观测时间：2026-10-06 15:46 UTC / 香港时间 23:46。此记录描述现象，不断言 GitHub 内部的具体故障原因。
 
 - 公开仓库：`tonywang1201/anyrouter-healthcheck`，创建于 `2026-10-06T12:41:12Z`，非 fork、未归档，默认分支 `main`。
 - 工作流：`.github/workflows/monitor.yml`，ID `376407062`，公开 API 返回 `state: active`。
@@ -19,6 +19,21 @@ GET https://api.github.com/repos/tonywang1201/anyrouter-healthcheck/actions/work
 ```
 
 第二个接口在观测时返回 `total_count: 0`、`workflow_runs: []`。也可查看[只筛选定时事件的执行列表](https://github.com/tonywang1201/anyrouter-healthcheck/actions/workflows/monitor.yml?query=event%3Aschedule)。
+
+## 后续原生调度排查
+
+- 15:49 UTC 提交 `f421498`：将模型工作流重新注册为 `probe.yml`，新 ID `376577663`，状态 `active`，cron 为 `8,23,38,53 * * * *`。原权限与检测代码保留。
+- 15:53 UTC 提交 `84a6315`：增加不使用密钥、不调用模型的最小 `cron-diagnostic.yml`，ID `376581041`，状态 `active`；每 5 分钟运行一次，用于观察 `schedule` 事件是否送达。
+- [最小诊断手动运行](https://github.com/tonywang1201/anyrouter-healthcheck/actions/runs/37491431849)于 15:54 UTC 成功；截至 15:58 UTC，整个仓库仍没有任何 `schedule` 事件。
+- 公开提交 API 确认 cron 修改提交的作者和提交者均关联到仓库拥有者 `tonywang1201`。
+- 约 16:01–16:03 UTC（香港时间次日 00:01–00:03）通过指向同一提交的临时分支切换并还原默认分支，尝试刷新定时分支/账号绑定。已确认默认分支恢复 `main`，临时分支已删除。
+- [新工作流全模型手动验证](https://github.com/tonywang1201/anyrouter-healthcheck/actions/runs/37492828693)于 16:04 UTC 启动，不能代替自动调度验收。
+
+当前定时事件核对接口（覆盖新旧工作流及最小诊断）：
+
+```text
+GET https://api.github.com/repos/tonywang1201/anyrouter-healthcheck/actions/runs?event=schedule&per_page=3
+```
 
 没有扩大仓库默认权限，也没有通过延长页面记录有效期掩盖中断。页面仍在 30 分钟没有新记录后显示未知，并说明数据已过期。Cloudflare 备用定时器的代码已准备好，默认关闭且尚未部署。
 

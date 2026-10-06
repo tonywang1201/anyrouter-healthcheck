@@ -23,6 +23,8 @@ GitHub 定时任务可能延迟或漏跑；公开仓库连续 60 天没有活动
 
 如果仓库长期没有任何 `schedule` 事件，先检查默认分支、工作流启用状态和 Actions 策略；仅有手动运行成功不能证明定时已恢复。需要绕过 GitHub 定时触发时，可使用 [Cloudflare 备用定时器](scheduler/README.md)，默认关闭且尚未部署。
 
+排障期间另有 **Cron delivery diagnostic**：每 5 分钟仅记录事件到达时间，不使用模型密钥或调用 API。恢复正常后可禁用该诊断工作流。原生定时的排障证据见 [调度诊断记录](docs/scheduler-diagnostics.md)。
+
 ## 调整模型和协议
 
 编辑 `config/models.json`。仅监测配置中列出的模型，不自动扫描或增加模型。
