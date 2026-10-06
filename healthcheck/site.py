@@ -59,9 +59,11 @@ def build_site(config: dict, data_dir: Path, output: Path, now=None, demo=False)
     models = []
     for model in config["models"]:
         recent = clean_record(latest[model["id"]]) if model["id"] in latest else None
-        stale = not recent or (now - parse_time(recent["checked_at"])).total_seconds() > config["stale_after_minutes"] * 60
-        started = meta.get("model_started_at", {}).get(model["id"], meta.get("monitor_started_at"))
+        age = (now - parse_time(recent["checked_at"])).total_seconds() if recent else None
+        stale = age is None or age < -60 or age > config["stale_after_minutes"] * 60
+        started = meta["model_started_at"].get(model["id"]) if "model_started_at" in meta else meta.get("monitor_started_at")
         models.append({"id": model["id"], "provider": model.get("provider", "Other"), "protocol": model["protocol"],
+                       "started_at": started,
                        "latest": recent, "current_status": "unknown" if stale else recent["status"],
                        "stats": {str(hours): window_stats(by_model[model["id"]], now, hours, config["interval_minutes"], started)
                                  for hours in (24, 168, 720)}})

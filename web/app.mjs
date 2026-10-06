@@ -1,9 +1,11 @@
-import {LABELS,REASONS,currentStatus,timelineSlots,latencySegments,formatTime,percent,duration} from './status.mjs';
+import {LABELS,REASONS,currentStatus,timelineSlots,latencySegments,windowStats,formatTime,percent,duration} from './status.mjs';
 
 const $ = id => document.getElementById(id);
 let manifest, selectedModel, selectedHours = 24, provider = 'all', query = '', requestVersion = 0;
 const cache = new Map();
 let recentChecks = [];
+let recentLoaded = false;
+let detailChecks = [];
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -18,6 +20,13 @@ function badge(status) {
 }
 function statusOf(model) { return currentStatus(model.latest, Date.now(), manifest.stale_after_minutes); }
 function nowForHistory() { return Date.now(); }
+function detailStats(model,checks) {
+  const stats=windowStats(checks,Date.now(),selectedHours,manifest.interval_minutes,model.started_at);
+  $('detail-rate').textContent=percent(stats.success_rate);
+  $('detail-coverage').textContent=percent(stats.coverage);
+  $('detail-p50').textContent=duration(stats.p50_ms);
+  $('detail-p95').textContent=duration(stats.p95_ms);
+}
 
 async function json(url) {
   const response = await fetch(new URL(url, location.href), {cache:'no-store'});
@@ -49,6 +58,7 @@ function renderSummary() {
   $('stale-label').textContent = `超过 ${manifest.stale_after_minutes} 分钟未收到新记录`;
   $('probe-location').textContent = manifest.probe_location;
   $('demo-banner').hidden = !manifest.is_demo;
+  document.querySelector('.th-note').textContent=`每格 ${manifest.interval_minutes} 分钟`;
   document.title = manifest.title;
 }
 function renderModels() {
@@ -80,8 +90,9 @@ function renderModels() {
     }
     const labels = element('div','timeline-labels'); labels.append(element('span',null,'24 小时前'),element('span',null,'现在'));
     historyCell.append(timeline,labels);
-    const rateCell = element('td','metric',percent(model.stats['24'].success_rate));
-    rateCell.append(element('small',null,`${model.stats['24'].attempts} 次调用`));
+    const stats=recentLoaded ? windowStats(recentChecks.filter(check=>check.model===model.id),Date.now(),24,manifest.interval_minutes,model.started_at) : model.stats['24'];
+    const rateCell = element('td','metric',percent(stats.success_rate));
+    rateCell.append(element('small',null,`${stats.attempts} 次调用`));
     const latencyCell = element('td','latency latency-cell',duration(model.latest?.latency_ms));
     const detailCell = element('td');
     const detailButton = element('button','detail-button','↗'); detailButton.setAttribute('aria-label',`打开 ${model.id} 图表`); detailButton.addEventListener('click',()=>selectModel(model.id)); detailCell.append(detailButton);
@@ -141,6 +152,8 @@ async function renderDetail() {
   try {
     const checks=(await checksFor(selectedHours)).filter(check=>check.model===selectedModel).sort((a,b)=>Date.parse(a.checked_at)-Date.parse(b.checked_at));
     if(version!==requestVersion) return;
+    detailChecks=checks;
+    detailStats(model,checks);
     renderChart(checks);
     const rows=document.createDocumentFragment();
     for(const check of [...checks].reverse().slice(0,10)) {
@@ -162,9 +175,9 @@ async function load() {
   try {
     const fresh=await json('./data/status.json');
     if(fresh.schema_version!==1 || !Array.isArray(fresh.models)) throw new Error('Unknown schema');
-    manifest=fresh;cache.clear();renderSummary();renderModels();
+    manifest=fresh;cache.clear();recentLoaded=false;renderSummary();renderModels();
     $('load-error').hidden=true;
-    try {recentChecks=await checksFor(24);renderModels();} catch {recentChecks=[];renderModels();$('load-error').textContent='当前状态已加载，历史文件暂时无法读取；灰色记录不代表故障。';$('load-error').hidden=false;}
+    try {recentChecks=await checksFor(24);recentLoaded=true;renderModels();} catch {recentChecks=[];renderModels();$('load-error').textContent='当前状态已加载，历史文件暂时无法读取；灰色记录不代表故障。';$('load-error').hidden=false;}
     if(!selectedModel) selectedModel=manifest.models[0]?.id;
     if(selectedModel) await renderDetail();
   } catch {
@@ -185,6 +198,6 @@ $('window-filters').addEventListener('click',event=>{
   if(manifest)renderDetail();
 });
 // Re-evaluate freshness even if a tab stays open during missed workflow runs.
-setInterval(()=>{if(manifest){renderSummary();renderModels();}},30000);
+setInterval(()=>{if(manifest){renderSummary();renderModels();const model=manifest.models.find(m=>m.id===selectedModel);if(model&&detailChecks.length)detailStats(model,detailChecks);}},30000);
 setInterval(()=>{if(!document.hidden)load();},300000);
 load();

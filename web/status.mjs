@@ -9,6 +9,18 @@ export function sampleRate(checks) {
   const completed = checks.filter(c => c.status !== 'unknown');
   return completed.length ? completed.filter(c => c.status === 'success').length / completed.length * 100 : null;
 }
+export function windowStats(checks, now, hours, intervalMinutes, startedAt) {
+  const since=now-hours*3600000;
+  const completed=checks.filter(check=>check.status!=='unknown'&&Date.parse(check.checked_at)>=since&&Date.parse(check.checked_at)<=now);
+  const latencies=completed.filter(check=>check.status==='success'&&check.latency_ms!=null).map(check=>check.latency_ms).sort((a,b)=>a-b);
+  const interval=intervalMinutes*60000;
+  const start=startedAt ? Math.max(since,Date.parse(startedAt)) : now;
+  const expected=startedAt ? Math.max(0,Math.floor(now/interval)-Math.floor(start/interval)+1) : 0;
+  const slots=new Set(completed.map(check=>Math.floor(Date.parse(check.checked_at)/interval)));
+  return {attempts:completed.length,success_rate:sampleRate(completed),coverage:expected?Math.min(1,slots.size/expected)*100:null,
+    p50_ms:latencies.length?latencies[Math.floor((latencies.length-1)/2)]:null,
+    p95_ms:latencies.length?latencies[Math.max(0,Math.ceil(latencies.length*.95)-1)]:null};
+}
 export function timelineSlots(checks, now, intervalMinutes, hours = 24) {
   const interval = intervalMinutes * 60000;
   const lastSlot = Math.floor(now / interval);
